@@ -1,4 +1,4 @@
-// Editorial HUD laid over the beach: location, live clock, phase, conditions and a time-of-day timeline.
+// Editorial HUD laid over the ocean: identity, local date and time, conditions and timeline.
 import { formatHour, compass, toCss, clamp } from "./palette.js";
 
 const el = (tag, cls, text) => {
@@ -11,18 +11,15 @@ const el = (tag, cls, text) => {
 export function createHud({ onScrub, onJump, onLive, onLapse, skyAt, getDay }) {
   const root = el("div", "bh");
   root.setAttribute("role", "region");
-  root.setAttribute("aria-label", "Santa Monica beach, live conditions");
+  root.setAttribute("aria-label", "kdmirah ocean, live conditions");
 
-  // ----- left: place, clock, phase
+  // ----- left: identity, date and time, phase
   const left = el("section", "bh-left");
-  left.append(
-    el("p", "bh-eyebrow", "Pacific coast · 34.02°N 118.49°W"),
-    el("h2", "bh-place", "Santa Monica"),
-  );
+  left.append(el("h2", "bh-place", "kdmirah"));
   const clock = el("p", "bh-clock");
+  const date = el("span", "bh-date", "");
   const hm = el("span", "bh-hm", "--:--");
-  const sec = el("span", "bh-sec", "");
-  clock.append(hm, sec);
+  clock.append(date, document.createTextNode(" · "), hm);
   const phase = el("p", "bh-phase");
   const dot = el("i", "bh-dot");
   const phaseText = el("span", "", "—");
@@ -160,8 +157,9 @@ export function createHud({ onScrub, onJump, onLive, onLapse, skyAt, getDay }) {
   let lastEnvKey = "";
   function update(s) {
     const { shown, live, lapse, env, weather, realHour } = s;
+    const localDate = new Date();
+    date.textContent = new Intl.DateTimeFormat(undefined, { day: "2-digit", month: "short", year: "numeric" }).format(localDate);
     hm.textContent = formatHour(shown);
-    sec.textContent = live ? ":" + String(Math.floor((((realHour % 24) * 3600) % 60))).padStart(2, "0") : "";
     phaseText.textContent = env.phase;
     dot.style.background = toCss(env.palette.glint);
     dot.style.boxShadow = `0 0 14px 2px ${toCss(env.palette.glint)}`;

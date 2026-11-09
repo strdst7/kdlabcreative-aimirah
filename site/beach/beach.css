@@ -65,11 +65,9 @@ html.bh-nogl.beach-mode body { background: linear-gradient(180deg, var(--bh-sky)
 .bh-left { position: absolute; left: 2.5vw; bottom: var(--bh-bar); max-width: min(46vw, 460px); }
 .bh-eyebrow { margin: 0 0 6px; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.92; }
 .bh-place { margin: 0; font: 400 clamp(26px, 2.5vw, 44px)/1 var(--bh-serif); letter-spacing: -0.01em; }
-.bh-clock {
-  margin: clamp(8px, 1.2vh, 16px) 0 0; font: 400 clamp(58px, 7.6vw, 128px)/0.88 var(--bh-serif);
-  letter-spacing: -0.03em; font-variant-numeric: lining-nums tabular-nums; white-space: nowrap;
-}
-.bh-sec { font: 500 clamp(13px, 1.1vw, 18px)/1 var(--bh-mono); letter-spacing: 0.04em; opacity: 0.6; margin-left: 0.2em; vertical-align: 0.9em; }
+.bh-clock { display: flex; gap: 10px; align-items: baseline; margin: 12px 0 0; font: 500 13px/1.2 var(--bh-mono); letter-spacing: 0.13em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.bh-date { opacity: 0.78; text-transform: uppercase; }
+.bh-hm { font-size: 17px; letter-spacing: 0.04em; }
 .bh-phase { display: flex; align-items: center; gap: 10px; margin: 12px 0 0; font-size: 12px; letter-spacing: 0.22em; text-transform: uppercase; }
 .bh-dot { width: 8px; height: 8px; border-radius: 50%; background: #fff; display: inline-block; }
 .bh-mode { margin: 6px 0 0; font-size: 9.5px; letter-spacing: 0.18em; text-transform: uppercase; opacity: 0.62; }
@@ -139,7 +137,8 @@ html.bh-nogl.beach-mode body { background: linear-gradient(180deg, var(--bh-sky)
   .bh-eyebrow, .bh-mode, .bh-src { display: none; }
   .bh-left { left: 14px; max-width: 54vw; bottom: calc(var(--bh-bar) + 86px); }
   .bh-place { font-size: 22px; }
-  .bh-clock { font-size: 17vw; }
+  .bh-clock { font-size: 10px; gap: 7px; margin-top: 9px; }
+  .bh-hm { font-size: 13px; }
   .bh-phase { font-size: 10px; margin-top: 8px; }
   .bh-env { right: 14px; width: 38vw; bottom: calc(var(--bh-bar) + 86px); }
   .bh-row:nth-child(n + 5) { display: none; }

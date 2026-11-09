@@ -17,6 +17,7 @@ Live: https://kdlabcreative-aimirah.vercel.app
 - **Interaction.** Pointer movement parts the water and adds parallax. A tap or click sends out a ripple.
 - **Timeline.** Drag or use the arrow keys to explore any hour. Chips jump to sunrise, day, golden hour, sunset and night. `Live` returns to now, `Time-lapse` plays a whole day.
 - **Conditions.** Air, wind, swell and water temperature come from Open-Meteo (no key) and also drive wave height, clouds and wind in the scene. Sun and moon figures are computed locally. The scene works offline.
+- **Sound.** An original looping ocean-and-glass ambient track plays after a user gesture. Use the speaker button to mute it. `remake/gen/make-ocean-audio.py` regenerates the track with Python and FFmpeg.
 
 ## URLs
 
