@@ -14,6 +14,7 @@ Live: https://kdlabcreative-aimirah.vercel.app
 - **Time-adaptive light.** Sun elevation for Santa Monica (34.02°N, 118.49°W) and the day of year drive every colour: sunrise, daytime, golden hour, sunset, dusk and night. Colours blend continuously, with no preset scenes.
 - **Particle ocean.** Five crossing swells with Gerstner roll, breakers, swash foam and a glitter path under the sun or moon, all computed in a GPU vertex shader.
 - **Flowing ribbons.** Wave-crest strokes ride the surface. The pointer, gulls and the sailboat leave ribbon wakes.
+- **Koi.** The three koi swim in the sea band between the horizon and the shore, dim at night and fade at the band edges. The +/− control changes how many swim, and a click drops a coin they chase.
 - **Interaction.** Pointer movement parts the water and adds parallax. A tap or click sends out a ripple.
 - **Timeline.** Drag or use the arrow keys to explore any hour. Chips jump to sunrise, day, golden hour, sunset and night. `Live` returns to now, `Time-lapse` plays a whole day.
 - **Conditions.** Air, wind, swell and water temperature come from Open-Meteo (no key) and also drive wave height, clouds and wind in the scene. Sun and moon figures are computed locally. The scene works offline.
@@ -25,7 +26,7 @@ Live: https://kdlabcreative-aimirah.vercel.app
 | `/` | The beach at your local time |
 | `/?t=18.5` | Hold the beach at 18:30 |
 | `/?lapse` | Start in time-lapse |
-| `/?koi` | The original koi pond |
+| `/?koi` | The koi pond full screen, without the beach |
 
 ## Layout
 

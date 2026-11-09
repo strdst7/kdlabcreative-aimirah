@@ -21,10 +21,14 @@ html.bh-nogl.beach-mode body { background: linear-gradient(180deg, var(--bh-sky)
 .beach-mode #root { position: relative; z-index: 1; }
 .beach-mode .hero { background: transparent !important; }
 
-/* the koi layers belong to ?koi mode */
-.beach-mode canvas[aria-label="Swimming koi"],
-.beach-mode canvas[aria-label="Sparkles and dropped coins"],
-.beach-mode [aria-label="Number of fish"] { display: none !important; }
+/* the koi swim in the sea band between the horizon and the shore, fading in and out at its edges */
+.beach-mode .bh-koi,
+.beach-mode .bh-koi-fx {
+  inset: 41vh 0 auto 0 !important; height: 33vh;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 18%, #000 82%, transparent 100%);
+  mask-image: linear-gradient(180deg, transparent 0%, #000 18%, #000 82%, transparent 100%);
+}
+.beach-mode .bh-koi { filter: brightness(calc(1 - var(--bh-night) * 0.5)) saturate(calc(1 - var(--bh-night) * 0.25)); }
 
 /* menu and about panel take the colour of the hour */
 .beach-mode .bg-\[\#14c8cf\]\/92 { background-color: color-mix(in srgb, var(--bh-accent) 90%, transparent) !important; }
