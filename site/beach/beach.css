@@ -142,6 +142,7 @@ html.bh-nogl.beach-mode body { background: linear-gradient(180deg, var(--bh-sky)
   .bh-row { padding: 5px 0; gap: 8px; }
   .bh-row dd { font-size: 10.5px; }
   .bh-timeline { width: calc(100vw - 28px); }
+  .bh-chips-bottom { display: none; }
   .bh-chip { font-size: 8px; letter-spacing: 0.12em; }
 }
 
