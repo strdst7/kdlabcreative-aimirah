@@ -2,7 +2,7 @@
 // Particles are placed once. Waves, colour and light run on the GPU.
 import * as THREE from "./three.module.min.js";
 import {
-  COMMON, SKY_VERT, SKY_FRAG, POINT_FRAG, OCEAN_VERT, SAND_VERT, MOUNTAIN_VERT, STRUCT_VERT,
+  COMMON, SKY_VERT, SKY_FRAG, POINT_FRAG, OCEAN_VERT, MOUNTAIN_VERT, STRUCT_VERT,
   DUST_VERT, FLOW_VERT, FLOW_FRAG, RIBBON_VERT, RIBBON_FRAG, SPRITE_VERT, SPRITE_FRAG,
 } from "./shaders.js";
 import { clamp, lerp, smooth } from "./palette.js";
@@ -33,8 +33,7 @@ const WV = [
 export function waveH(x, z, t, amp) {
   const px = x + 0.9 * Math.sin(z * 0.045 + t * 0.13);
   const pz = z + 0.9 * Math.cos(x * 0.05 - t * 0.11);
-  const dsh = shoreZ(x) - z;
-  const a0 = amp * (0.2 + 0.8 * smooth(0, 34, dsh));
+  const a0 = amp;
   let h = 0;
   for (let i = 0; i < 5; i++) {
     const [wl, ang, fr] = WV[i];
@@ -191,7 +190,7 @@ export function createScene(canvas, opts = {}) {
     uStars: { value: 0 }, uMoonF: { value: 0.5 }, uCloudQ: { value: mobile ? 3 : 4 },
   };
 
-  // sky: full-screen triangle that also paints the base fill under the water and sand
+  // sky: full-screen triangle that also paints the water under the particles
   const skyGeo = new THREE.BufferGeometry();
   skyGeo.setAttribute("position", new THREE.BufferAttribute(new Float32Array([-1, -1, 0, 3, -1, 0, -1, 3, 0]), 3));
   const sky = new THREE.Mesh(skyGeo, new THREE.ShaderMaterial({
@@ -205,10 +204,9 @@ export function createScene(canvas, opts = {}) {
     uniforms: { ...U, ...extra }, vertexShader, fragmentShader: POINT_FRAG, ...PREMULT,
   });
 
-  // geometry that depends on the screen (ocean, sand, flow ribbons) is rebuilt on resize
-  let ocean = null, sand = null, flow = null;
+  // geometry that depends on the screen (ocean and flow ribbons) is rebuilt on resize
+  let ocean = null, flow = null;
   const oceanMat = pointMat(OCEAN_VERT);
-  const sandMat = pointMat(SAND_VERT);
   const flowMat = new THREE.ShaderMaterial({
     uniforms: { ...U }, vertexShader: FLOW_VERT, fragmentShader: FLOW_FRAG,
     transparent: true, depthTest: false, depthWrite: false, blending: THREE.CustomBlending,
@@ -316,11 +314,9 @@ export function createScene(canvas, opts = {}) {
     return pointsFrom(pos, randomAttr(n, rand), null, pointMat(DUST_VERT), 7);
   }
 
-  scene.add(buildMountains());
-  scene.add(buildPalms());
   scene.add(buildDust());
 
-  // ---------- screen-dependent particles: ocean, sand, flow ribbons ----------
+  // ---------- screen-dependent particles: ocean and flow ribbons ----------
 
   const tmp = new THREE.Vector3();
   const dir = new THREE.Vector3();
@@ -347,11 +343,6 @@ export function createScene(canvas, opts = {}) {
     camera.updateMatrixWorld(true);
     camPos.copy(camera.position);
 
-    let minY = 9, maxY = -9;
-    for (let x = -80; x <= 80; x += 4) {
-      tmp.set(x, 0, shoreZ(x)).project(camera);
-      minY = Math.min(minY, tmp.y); maxY = Math.max(maxY, tmp.y);
-    }
     tmp.set(0, CAM_Y, -1e6).project(camera);
     const horizonY = tmp.y;
 
@@ -365,36 +356,15 @@ export function createScene(canvas, opts = {}) {
     while (c < nOcean && tries < nOcean * 4) {
       tries++;
       const nx = (rand() * 2 - 1) * 1.22;
-      const ny = lerp(minY - 0.05, horizonY - 0.0006, rand());
+      const ny = lerp(-1.25, horizonY - 0.0006, rand());
       const t = rayGround(nx, ny, tanY, aspect, P);
       if (t < 0 || t > 3600) continue;
-      if (P.z > shoreZ(P.x) + 2.5) continue;
       oPos[c * 3] = P.x; oPos[c * 3 + 1] = 0; oPos[c * 3 + 2] = P.z; c++;
     }
     const oRnd = randomAttr(c, rand);
     if (ocean) { ocean.geometry.dispose(); scene.remove(ocean); }
     ocean = pointsFrom(oPos.subarray(0, c * 3), oRnd, null, oceanMat, 1);
     scene.add(ocean);
-
-    // sand
-    const nSand = Math.round(clamp(0.26 * w * h / 5.6, 9000, 42000) * quality);
-    const sPos = new Float32Array(nSand * 3);
-    c = 0; tries = 0;
-    while (c < nSand && tries < nSand * 4) {
-      tries++;
-      const nx = (rand() * 2 - 1) * 1.22;
-      const ny = lerp(-1.25, maxY + 0.03, rand());
-      const t = rayGround(nx, ny, tanY, aspect, P);
-      if (t < 0) continue;
-      if (P.z < shoreZ(P.x) - 2.5) continue;
-      const inland = Math.max(0, P.z - shoreZ(P.x));
-      const y = inland * 0.028 + 0.22 * Math.sin(P.x * 0.21 + P.z * 0.13) * Math.min(1, inland / 8) + 0.1 * Math.sin(P.x * 0.9 + P.z * 0.4);
-      sPos[c * 3] = P.x; sPos[c * 3 + 1] = Math.max(y, 0); sPos[c * 3 + 2] = P.z; c++;
-    }
-    const sRnd = randomAttr(c, rand);
-    if (sand) { sand.geometry.dispose(); scene.remove(sand); }
-    sand = pointsFrom(sPos.subarray(0, c * 3), sRnd, null, sandMat, 2);
-    scene.add(sand);
 
     // flow ribbons: wave-crest strokes that ride the surface
     const F = Math.round(44 * (mobile ? 0.7 : 1)), N = 40;
@@ -408,10 +378,10 @@ export function createScene(canvas, opts = {}) {
       let nx, ny;
       do {
         nx = (rand() * 2 - 1) * 1.05;
-        ny = lerp(minY + 0.05, horizonY - 0.01, Math.pow(rand(), 0.8));
+        ny = lerp(-1.1, horizonY - 0.01, Math.pow(rand(), 0.8));
         t = rayGround(nx, ny, tanY, aspect, P);
         tries2++;
-      } while ((t < 0 || t > 1400 || P.z > shoreZ(P.x) - 5) && tries2 < 20);
+      } while ((t < 0 || t > 1400) && tries2 < 20);
       const d = Math.max(t, 20);
       const len = d * (0.12 + rand() * 0.28);
       const ang = (rand() - 0.5) * 0.5;
@@ -501,7 +471,7 @@ export function createScene(canvas, opts = {}) {
     const t = -camera.position.y / dir.y;
     if (t > 600) return false;
     hit.set(camera.position.x + dir.x * t, 0, camera.position.z + dir.z * t);
-    return hit.z < shoreZ(hit.x) - 0.5;
+    return true;
   };
 
   let basePitch = 0.09;

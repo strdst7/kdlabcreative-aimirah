@@ -141,18 +141,14 @@ void main(){
       }
     }
   } else {
-    // below the horizon: the base fill under the particle water and sand
+    // below the horizon: water fills the whole screen
     float t = -uCamPos.y / d.y;
     vec3 P = uCamPos + d * t;
-    float dsh = shoreZ(P.x) - P.z;
     vec3 r = vec3(d.x, -d.y, d.z);
     float fres = 0.02 + 0.98 * pow(1.0 + d.y, 5.0);
     vec3 refl = skyGrad(r);
-    vec3 water = mix(mix(uDeep, uShallow, smoothstep(120.0, 0.0, dsh) * 0.65) * 0.8, refl, clamp(fres * 1.1, 0.0, 0.9));
-    float ds = -dsh;
-    float wet = smoothstep(7.0, 0.0, ds);
-    vec3 sand = mix(uSand * 0.86, uWet, wet * 0.8);
-    col = mix(water, sand, smoothstep(-0.7, 0.7, ds));
+    float nearWater = smoothstep(800.0, 4.0, t);
+    col = mix(mix(uDeep, uShallow, nearWater * 0.5) * 0.8, refl, clamp(fres * 1.1, 0.0, 0.9));
     col = mix(col, uFog, exp(d.y * 16.0) * 0.7);
   }
 
@@ -187,8 +183,7 @@ varying float vAlpha;
 varying vec3 vGlow;
 void main(){
   vec3 p0 = position;
-  float dsh = shoreZ(p0.x) - p0.z;
-  float amp = uAmp * mix(0.2, 1.0, smoothstep(0.0, 34.0, dsh));
+  float amp = uAmp;
   vec2 disp;
   vec4 w = waves(p0.xz, uTime, amp, disp);
 
@@ -222,7 +217,7 @@ void main(){
   vec3 R = reflect(-V, N);
 
   float crest = smoothstep(0.1, 0.95, h / (uAmp * 1.1 + 0.001));
-  float shMix = smoothstep(90.0, 0.0, dsh) * 0.85;
+  float shMix = smoothstep(180.0, 8.0, length(cameraPosition - pos)) * 0.7;
   vec3 body = mix(uDeep, uShallow, clamp(shMix + crest * 0.35 + aRnd.y * 0.12, 0.0, 1.0));
   vec3 refl = mix(uFog, uMid, clamp(R.y * 1.6, 0.0, 1.0));
   vec3 col = mix(body, refl, clamp(fres * 0.9, 0.0, 0.8));
@@ -236,23 +231,18 @@ void main(){
   float sp = smoothstep(0.986, 1.0, fract(aRnd.w * 13.7 + uTime * 0.12 * (0.5 + aRnd.z)));
   glow += uGlint * sp * (0.2 + 0.8 * fres) * uSpark * 0.55;
 
-  // foam: breakers near the shore, a few whitecaps further out, and the swash edge
-  float breakers = smoothstep(16.0, 2.0, dsh) * smoothstep(0.05, 0.6, crest + rip * 0.3);
-  float caps = step(0.94, crest) * aRnd.y * 0.5;
-  float swashEdge = -1.6 * (0.5 + 0.5 * sin(uTime * 0.45 + p0.x * 0.17 + h * 1.3));
-  float lace = smoothstep(2.8, 0.0, dsh - swashEdge) * (0.55 + 0.45 * sin(p0.x * 2.3 + uTime * 0.8 + aRnd.x * 6.0));
-  float foam = clamp(breakers + caps + lace * 0.95, 0.0, 1.0);
+  // Whitecaps and interaction ripples replace the old shoreline foam.
+  float foam = clamp(step(0.94, crest) * aRnd.y * 0.5 + max(rip, 0.0) * 0.25, 0.0, 1.0);
   col = mix(col, uFoam, foam);
   glow += vec3(0.10, 0.38, 0.80) * uNight * (0.12 + 0.88 * crest) * (0.25 + 0.75 * tw) * 0.5;
-  float edgeFade = smoothstep(swashEdge - 0.2, swashEdge + 1.8, dsh);
-  float alpha = (0.62 + 0.25 * foam) * edgeFade;
+  float alpha = 0.62 + 0.25 * foam;
 
   float dist = length(cameraPosition - pos);
   float fogF = smoothstep(180.0, 3200.0, dist) * 0.88;
   col = mix(col, uFog, fogF);
   glow *= 1.0 - fogF * 0.5;
 
-  vCol = col; vAlpha = alpha; vGlow = glow * edgeFade;
+  vCol = col; vAlpha = alpha; vGlow = glow;
   gl_Position = projectionMatrix * viewMatrix * vec4(pos, 1.0);
   gl_PointSize = (1.4 + 1.9 * aRnd.y + 2.2 * clamp(dot(glow, vec3(0.33)), 0.0, 1.0)) * uDpr;
 }`;
@@ -379,16 +369,14 @@ varying float vSide;
 void main(){
   vec3 p = position;
   p.x += sin(aAlong * 5.0 + uTime * 0.25 + aRnd.x * 6.0) * aRnd.w * 3.0;
-  float dsh = shoreZ(p.x) - p.z;
-  float amp = uAmp * mix(0.2, 1.0, smoothstep(0.0, 34.0, dsh));
+  float amp = uAmp;
   vec2 disp;
   vec4 w = waves(p.xz, uTime, amp, disp);
   p.y = w.x + 0.06;
   p.xz += disp * 0.6;
   float flow = 0.5 + 0.5 * sin(aAlong * 6.2831853 * (1.0 + aRnd.z * 2.0) - uTime * (0.25 + aRnd.y * 0.4) + aRnd.x * 6.2831853);
   float fade = sin(3.14159265 * aAlong);
-  float edge = smoothstep(0.0, 6.0, dsh);
-  vA = fade * flow * flow * (0.22 + 0.5 * aRnd.w) * edge;
+  vA = fade * flow * flow * (0.22 + 0.5 * aRnd.w);
   vSide = aSide;
   gl_Position = projectionMatrix * viewMatrix * vec4(p, 1.0);
 }`;
