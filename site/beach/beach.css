@@ -1,0 +1,155 @@
+/* Particle beach: canvas, headline, HUD. Everything is scoped to html.beach-mode, so ?koi still shows the koi pond. */
+
+:root {
+  --bh-ink: #ffffff;
+  --bh-accent: #14c8cf;
+  --bh-sky: #04101c;
+  --bh-horizon: #14305a;
+  --bh-water: #04122e;
+  --bh-night: 0;
+  --bh-bar: calc(3.5vh + 72px);
+  --bh-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --bh-serif: "Instrument Serif", Didot, "Bodoni MT", Georgia, serif;
+}
+
+html.beach-mode,
+html.beach-mode body { background: var(--bh-sky) !important; overscroll-behavior: none; }
+html.bh-nogl.beach-mode body { background: linear-gradient(180deg, var(--bh-sky) 0%, var(--bh-horizon) 42%, var(--bh-water) 100%) !important; }
+
+#beach-canvas { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; display: block; }
+
+.beach-mode #root { position: relative; z-index: 1; }
+.beach-mode .hero { background: transparent !important; }
+
+/* the koi layers belong to ?koi mode */
+.beach-mode canvas[aria-label="Swimming koi"],
+.beach-mode canvas[aria-label="Sparkles and dropped coins"],
+.beach-mode [aria-label="Number of fish"] { display: none !important; }
+
+/* menu and about panel take the colour of the hour */
+.beach-mode .bg-\[\#14c8cf\]\/92 { background-color: color-mix(in srgb, var(--bh-accent) 90%, transparent) !important; }
+
+/* menu and about titles use the same serif, which runs wider than the original: keep them on screen */
+.beach-mode .menu-item, .beach-mode .about-title { font-size: min(6vw, 11vh) !important; white-space: nowrap; }
+@media (max-width: 640px) { .beach-mode .menu-item, .beach-mode .about-title { font-size: 6.2vw !important; } }
+
+/* headline: the brand sits in the sky */
+.beach-mode .hero .display:not(.menu-item):not(.about-title) {
+  position: fixed; left: 0; right: 0; top: clamp(78px, 11.5vh, 150px); margin: 0;
+  text-align: center; font-size: min(10.2vw, 17vh); line-height: 0.86; letter-spacing: -0.035em;
+  color: var(--bh-ink); text-shadow: 0 0 2px rgba(8, 40, 64, 0.22), 0 6px 46px rgba(8, 44, 70, 0.38); pointer-events: none; z-index: 2;
+  transition: color 1.2s linear;
+}
+.beach-mode .display:not(.menu-item):not(.about-title) > div { padding-left: 0 !important; margin-top: 0 !important; }
+.beach-mode .display .label { display: none !important; }
+
+/* ---------- HUD ---------- */
+
+.bh {
+  position: fixed; inset: 0; z-index: 5; pointer-events: none; color: var(--bh-ink);
+  font-family: var(--bh-mono); opacity: 0; transition: opacity 1.8s ease, visibility 0.3s;
+  text-shadow: 0 1px 14px rgba(0, 0, 0, 0.42), 0 0 2px rgba(0, 0, 0, 0.25);
+}
+.beach-ready .bh { opacity: 1; }
+.bh::before {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 52vh; pointer-events: none;
+  background: linear-gradient(180deg, transparent 0%, rgba(3, 20, 30, 0.16) 45%, rgba(3, 20, 30, 0.46) 100%);
+}
+.bh > * { z-index: 1; }
+.beach-ready .bh.bh-hidden { opacity: 0; visibility: hidden; transition: opacity 0.3s, visibility 0s 0.3s; }
+
+.bh-left { position: absolute; left: 2.5vw; bottom: var(--bh-bar); max-width: min(46vw, 460px); }
+.bh-eyebrow { margin: 0 0 6px; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.92; }
+.bh-place { margin: 0; font: 400 clamp(26px, 2.5vw, 44px)/1 var(--bh-serif); letter-spacing: -0.01em; }
+.bh-clock {
+  margin: clamp(8px, 1.2vh, 16px) 0 0; font: 400 clamp(58px, 7.6vw, 128px)/0.88 var(--bh-serif);
+  letter-spacing: -0.03em; font-variant-numeric: lining-nums tabular-nums; white-space: nowrap;
+}
+.bh-sec { font: 500 clamp(13px, 1.1vw, 18px)/1 var(--bh-mono); letter-spacing: 0.04em; opacity: 0.6; margin-left: 0.2em; vertical-align: 0.9em; }
+.bh-phase { display: flex; align-items: center; gap: 10px; margin: 12px 0 0; font-size: 12px; letter-spacing: 0.22em; text-transform: uppercase; }
+.bh-dot { width: 8px; height: 8px; border-radius: 50%; background: #fff; display: inline-block; }
+.bh-mode { margin: 6px 0 0; font-size: 9.5px; letter-spacing: 0.18em; text-transform: uppercase; opacity: 0.62; }
+
+.bh-env { position: absolute; right: 2.5vw; bottom: var(--bh-bar); width: min(236px, 40vw); text-align: right; }
+.bh-list { margin: 0; }
+.bh-row { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding: 6px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.24); }
+.bh-row dt { font-size: 9.5px; letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.86; }
+.bh-row dd { margin: 0; font-size: 11.5px; letter-spacing: 0.02em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.bh-src { margin: 8px 0 0; font-size: 8.5px; letter-spacing: 0.16em; text-transform: uppercase; opacity: 0.5; }
+
+/* timeline */
+.bh-timeline {
+  position: absolute; left: 50%; transform: translateX(-50%); bottom: var(--bh-bar);
+  width: min(760px, calc(100vw - 5vw)); display: grid; row-gap: 6px; pointer-events: auto;
+}
+.bh-chips { position: relative; height: 14px; }
+.bh-chips-bottom { height: 0; z-index: 1; }
+.bh-chips-bottom .bh-chip { top: 8px; }
+.bh-chip {
+  position: absolute; top: 0; transform: translateX(-50%); padding: 3px 4px; border: 0; background: none; color: inherit;
+  font: 500 9.5px/1 var(--bh-mono); letter-spacing: 0.18em; text-transform: uppercase; opacity: 0.62; cursor: pointer; text-shadow: inherit;
+  transition: opacity 0.2s;
+}
+.bh-chip.end { transform: translateX(-100%); }
+.bh-chip.start { transform: none; }
+.bh-chip:hover, .bh-chip.near, .bh-chip:focus-visible { opacity: 1; outline: none; }
+
+.bh-track {
+  position: relative; height: 26px; border-radius: 13px; cursor: ew-resize; touch-action: none;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3), 0 10px 34px rgba(0, 0, 0, 0.16);
+  outline: none;
+}
+.bh-track:focus-visible { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3), 0 0 0 3px rgba(255, 255, 255, 0.55); }
+.bh-ticks { position: absolute; inset: 0; border-radius: 13px; overflow: hidden; pointer-events: none; }
+.bh-tick { position: absolute; bottom: 0; width: 1px; height: 6px; background: rgba(255, 255, 255, 0.5); }
+.bh-tick.major { height: 10px; background: rgba(255, 255, 255, 0.75); }
+.bh-now {
+  position: absolute; top: -6px; width: 0; height: 0; transform: translateX(-50%); pointer-events: none;
+  border-left: 4px solid transparent; border-right: 4px solid transparent; border-top: 5px solid var(--bh-ink); opacity: 0.9;
+}
+.bh-knob {
+  position: absolute; top: 50%; width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 50%; background: #fff;
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.22), 0 4px 16px rgba(0, 0, 0, 0.3); transition: box-shadow 0.2s; pointer-events: none;
+}
+.bh.dragging .bh-knob { box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.26), 0 4px 18px rgba(0, 0, 0, 0.3); }
+.bh-knob-label {
+  position: absolute; bottom: 26px; left: 50%; transform: translateX(-50%); padding: 3px 7px; border-radius: 7px;
+  background: rgba(4, 16, 28, 0.42); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  font: 500 10px/1 var(--bh-mono); letter-spacing: 0.08em; opacity: 0; transition: opacity 0.2s; white-space: nowrap;
+}
+.bh.dragging .bh-knob-label, .bh-track:focus-visible .bh-knob-label { opacity: 1; }
+
+.bh-controls { display: flex; justify-content: space-between; align-items: center; height: 22px; }
+.bh-btn {
+  padding: 5px 11px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.42); background: rgba(255, 255, 255, 0.08);
+  color: inherit; font: 500 9.5px/1 var(--bh-mono); letter-spacing: 0.2em; text-transform: uppercase; cursor: pointer; text-shadow: none;
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); transition: background 0.25s, color 0.25s;
+}
+.bh-btn:hover { background: rgba(255, 255, 255, 0.2); }
+.bh-btn.on { background: rgba(255, 255, 255, 0.92); color: #0b2c33; }
+
+/* phones */
+@media (max-width: 640px) {
+  :root { --bh-bar: calc(3.5vh + 66px); }
+  .beach-mode .hero .display:not(.menu-item):not(.about-title) { top: 15vh; font-size: 15.5vw; }
+  .bh-eyebrow, .bh-mode, .bh-src { display: none; }
+  .bh-left { left: 14px; max-width: 54vw; bottom: calc(var(--bh-bar) + 86px); }
+  .bh-place { font-size: 22px; }
+  .bh-clock { font-size: 17vw; }
+  .bh-phase { font-size: 10px; margin-top: 8px; }
+  .bh-env { right: 14px; width: 38vw; bottom: calc(var(--bh-bar) + 86px); }
+  .bh-row:nth-child(n + 5) { display: none; }
+  .bh-row { padding: 5px 0; gap: 8px; }
+  .bh-row dd { font-size: 10.5px; }
+  .bh-timeline { width: calc(100vw - 28px); }
+  .bh-chip { font-size: 8px; letter-spacing: 0.12em; }
+}
+
+@media (max-height: 520px) and (orientation: landscape) {
+  .bh-env, .bh-eyebrow, .bh-mode { display: none; }
+  .bh-clock { font-size: 15vh; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bh { transition: none; }
+}
