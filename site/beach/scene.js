@@ -3,7 +3,7 @@
 import * as THREE from "./three.module.min.js";
 import {
   COMMON, SKY_VERT, SKY_FRAG, POINT_FRAG, OCEAN_VERT, SAND_VERT, MOUNTAIN_VERT, STRUCT_VERT,
-  WHEEL_VERT, DUST_VERT, FLOW_VERT, FLOW_FRAG, RIBBON_VERT, RIBBON_FRAG, SPRITE_VERT, SPRITE_FRAG,
+  DUST_VERT, FLOW_VERT, FLOW_FRAG, RIBBON_VERT, RIBBON_FRAG, SPRITE_VERT, SPRITE_FRAG,
 } from "./shaders.js";
 import { clamp, lerp, smooth } from "./palette.js";
 
@@ -256,51 +256,10 @@ export function createScene(canvas, opts = {}) {
     return group;
   }
 
-  const pierX = (z) => 11 + (-14 - z) * 0.045;
-  const WHEEL_Z = -52, WHEEL_R = 4.4;
-  const wheelCenter = new THREE.Vector3(pierX(WHEEL_Z), 2.4 + 1.3 + WHEEL_R, WHEEL_Z);
-  const wheelRight = new THREE.Vector3(0.92, 0, 0.39).normalize();
-
-  function buildStructures() {
+  function buildPalms() {
     const rand = mulberry(77);
     const P = [], K = [], R = [];
     const add = (x, y, z, kind, swayW = 0) => { P.push(x, y, z); K.push(kind); R.push(rand(), rand(), swayW, rand()); };
-
-    // pier deck, rails, bulbs and pylons
-    const zEnd = -118;
-    for (let z = -13; z > zEnd; z -= 0.2) {
-      const cx = pierX(z);
-      add(cx - 2.4, 2.4, z, 0); add(cx + 2.4, 2.4, z, 0);
-      add(cx - 2.4, 3.5, z, 1); add(cx + 2.4, 3.5, z, 1);
-    }
-    for (let z = -13; z > zEnd; z -= 0.3) {
-      const cx = pierX(z);
-      for (let k = -9; k <= 9; k++) add(cx + k * 0.25 + (rand() - 0.5) * 0.1, 2.4, z + (rand() - 0.5) * 0.12, 0);
-    }
-    for (let z = -13, i = 0; z > zEnd; z -= 3.4, i++) {
-      const cx = pierX(z);
-      const s = i % 2 ? 1 : -1;
-      add(cx + s * 2.4, 3.9, z, 2);
-      for (let y = 2.4; y < 3.5; y += 0.3) add(cx + s * 2.4, y, z, 1);
-    }
-    for (let z = -16; z > zEnd; z -= 6) {
-      const cx = pierX(z);
-      for (const s of [-2, 2]) for (let y = -0.9; y < 2.4; y += 0.34) add(cx + s, y, z, 3);
-    }
-    // T-shaped pier head
-    for (let x = -6; x <= 6; x += 0.4) { const cx = pierX(zEnd) + x; add(cx, 2.4, zEnd - 2.4, 0); add(cx, 2.4, zEnd + 2.4, 0); if (Math.abs(x) % 2 < 0.4) add(cx, 3.9, zEnd - 2.4, 2); }
-    // Ferris wheel A-frame legs (the wheel itself turns in its own object)
-    for (const s of [-1, 1]) {
-      for (let t = 0; t <= 1; t += 0.035) {
-        add(wheelCenter.x + wheelRight.x * s * 3.2 * t, lerp(wheelCenter.y, 2.4, t), wheelCenter.z + wheelRight.z * s * 3.2 * t, 0);
-      }
-    }
-    // pier-side amusements: a low row of lit booths near the shore end
-    for (let z = -16; z > -44; z -= 0.45) {
-      const cx = pierX(z) + 4.3;
-      add(cx, 2.4, z, 0); add(cx, 3.6 + 0.5 * Math.sin(z * 0.8), z, 1);
-      if (Math.floor(-z) % 3 === 0) add(cx, 4.4, z, 2);
-    }
 
     // palms in the foreground
     const palm = (bx, by, bz, h, lx, lz) => {
@@ -345,34 +304,6 @@ export function createScene(canvas, opts = {}) {
     return pts;
   }
 
-  function buildWheel() {
-    const rand = mulberry(5);
-    const P = [], R = [];
-    const add = (x, y, kind) => { P.push(x, y, kind); R.push(rand(), rand(), rand(), rand()); };
-    for (const r of [WHEEL_R, WHEEL_R - 0.28]) {
-      const n = Math.round((TAU * r) / 0.2);
-      for (let i = 0; i < n; i++) { const a = (i / n) * TAU; add(Math.cos(a) * r, Math.sin(a) * r, 0); }
-    }
-    const spokes = 16;
-    for (let s = 0; s < spokes; s++) {
-      const a = (s / spokes) * TAU;
-      for (let r = 0.2; r < WHEEL_R; r += 0.3) add(Math.cos(a) * r, Math.sin(a) * r, 1);
-      add(Math.cos(a) * (WHEEL_R + 0.45), Math.sin(a) * (WHEEL_R + 0.45) - 0.15, 2); // gondola
-    }
-    for (let i = 0; i < 14; i++) { const a = (i / 14) * TAU; add(Math.cos(a) * 0.35, Math.sin(a) * 0.35, 3); }
-    const lamps = 56;
-    for (let i = 0; i < lamps; i++) { const a = (i / lamps) * TAU; add(Math.cos(a) * (WHEEL_R + 0.12), Math.sin(a) * (WHEEL_R + 0.12), 4); }
-    const g = new THREE.BufferGeometry();
-    g.setAttribute("position", new THREE.BufferAttribute(new Float32Array(P), 3));
-    g.setAttribute("aRnd", new THREE.BufferAttribute(new Float32Array(R), 4));
-    const uniforms = { ...U, uWC: { value: wheelCenter.clone() }, uWR: { value: wheelRight.clone() }, uWA: { value: 0 } };
-    const pts = new THREE.Points(g, new THREE.ShaderMaterial({ uniforms, vertexShader: WHEEL_VERT, fragmentShader: POINT_FRAG, ...PREMULT }));
-    pts.frustumCulled = false;
-    pts.renderOrder = 4;
-    pts.userData.uniforms = uniforms;
-    return pts;
-  }
-
   function buildDust() {
     const rand = mulberry(303);
     const n = Math.round(2600 * quality);
@@ -386,9 +317,7 @@ export function createScene(canvas, opts = {}) {
   }
 
   scene.add(buildMountains());
-  scene.add(buildStructures());
-  const wheel = buildWheel();
-  scene.add(wheel);
+  scene.add(buildPalms());
   scene.add(buildDust());
 
   // ---------- screen-dependent particles: ocean, sand, flow ribbons ----------
@@ -678,8 +607,6 @@ export function createScene(canvas, opts = {}) {
     skyU.uUp.value.set(e[4], e[5], e[6]);
     skyU.uFwd.value.set(-e[8], -e[9], -e[10]);
     skyU.uCamPos.value.copy(camera.position);
-
-    wheel.userData.uniforms.uWA.value = time * 0.05;
 
     // pointer wake on the water
     const now = performance.now();

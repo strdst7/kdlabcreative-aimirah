@@ -317,7 +317,7 @@ void main(){
   gl_PointSize = (1.5 + 1.2 * aRnd.y + lamp * 1.5) * uDpr;
 }`;
 
-// ---------------------------------------------------------------- pier and palms
+// ---------------------------------------------------------------- palms
 
 export const STRUCT_VERT = /* glsl */ `
 ${COMMON}
@@ -339,46 +339,9 @@ void main(){
   vec3 col = base;
   vec3 glow = vec3(0.0);
   float a = 0.85, size = 2.2;
-  vec3 wood = mix(uPalm * 0.9 + uFog * 0.05, uSand * 0.5, 0.7);
-  wood = mix(wood, uFog, smoothstep(60.0, 900.0, dist0));
-  if (kind < 0.5)      { col = wood * 1.1; a = 0.8; size = 2.0; }
-  else if (kind < 1.5) { col = wood * 1.3; a = 0.75; size = 1.7; }
-  else if (kind < 2.5) {
-    float tw = 0.75 + 0.25 * sin(uTime * 2.0 + aRnd.x * 30.0);
-    vec3 lamp = mix(vec3(1.0, 0.82, 0.55), vec3(1.0, 0.6, 0.35), aRnd.y);
-    glow = lamp * (0.18 + 1.3 * uLamps) * tw;
-    a = 0.6; size = 3.6 + 3.0 * uLamps;
-  }
-  else if (kind < 3.5) { col = wood * 0.8; a = 0.7; size = 1.9; }
-  else { col = mix(base, uGlint * 0.5, rim * 0.12); a = 0.9; size = kind < 4.5 ? 2.4 : 2.0; }
+  col = mix(base, uGlint * 0.5, rim * 0.12);
+  a = 0.9; size = kind < 4.5 ? 2.4 : 2.0;
   vCol = col; vAlpha = a; vGlow = glow;
-  gl_Position = projectionMatrix * viewMatrix * vec4(pos, 1.0);
-  gl_PointSize = clamp(size * uDpr * clamp(60.0 / dist0, 0.6, 2.4), 1.0, 18.0);
-}`;
-
-export const WHEEL_VERT = /* glsl */ `
-${COMMON}
-attribute vec4 aRnd;
-uniform vec3 uWC, uWR;
-uniform float uWA;
-varying vec3 vCol;
-varying float vAlpha;
-varying vec3 vGlow;
-void main(){
-  float kind = position.z;
-  float c = cos(uWA), s = sin(uWA);
-  vec2 q = vec2(position.x * c - position.y * s, position.x * s + position.y * c);
-  vec3 pos = uWC + uWR * q.x + vec3(0.0, 1.0, 0.0) * q.y;
-  float dist0 = length(cameraPosition - pos);
-  vec3 lampCol = 0.55 + 0.45 * cos(6.2831853 * (aRnd.x + uTime * 0.04 + vec3(0.0, 0.33, 0.67)));
-  vec3 base = mix(uPalm * 1.1 + 0.05, uFoam * 0.85, 0.12 + 0.3 * uNight);
-  base = mix(base, uFog, smoothstep(60.0, 900.0, dist0));
-  vec3 glow = vec3(0.0);
-  float a = 0.8, size = 1.8;
-  if (kind > 1.5 && kind < 2.5) { glow = lampCol * (0.2 + 1.5 * uLamps); size = 5.0; a = 0.9; }
-  else if (kind > 3.5)          { glow = lampCol * (0.12 + 1.3 * uLamps) * (0.7 + 0.3 * sin(uTime * 3.0 + aRnd.y * 40.0)); size = 2.8 + 1.4 * uLamps; }
-  else if (kind > 2.5)          { size = 3.4; }
-  vCol = base; vAlpha = a; vGlow = glow;
   gl_Position = projectionMatrix * viewMatrix * vec4(pos, 1.0);
   gl_PointSize = clamp(size * uDpr * clamp(60.0 / dist0, 0.6, 2.4), 1.0, 18.0);
 }`;

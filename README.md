@@ -35,7 +35,7 @@ Live: https://kdlabcreative-aimirah.vercel.app
 | `site/index.html` | Page shell. Loads the React app and the beach. |
 | `site/beach/main.js` | Time model, weather, input and the render loop. |
 | `site/beach/scene.js` | Three.js scene: particle sets, ribbons, gulls, boat. |
-| `site/beach/shaders.js` | GLSL for sky, ocean, sand, mountains, pier and light. |
+| `site/beach/shaders.js` | GLSL for sky, ocean, sand, mountains, palms and light. |
 | `site/beach/palette.js` | Sun and moon geometry, phase names and colour palettes. |
 | `site/beach/hud.js`, `beach.css` | Editorial HUD and timeline. |
 | `site/beach/three.module.min.js` | Three.js r160 (MIT, see `THREE-LICENSE.txt`). |
