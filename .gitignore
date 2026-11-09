@@ -1,0 +1,8 @@
+node_modules/
+.vercel
+.DS_Store
+.env*
+remake/*
+!remake/gen/
+MAKE-IT-YOURS.md
+REPORT.md

@@ -1,0 +1,8 @@
+{
+  "name": "kdlabcreative-aimirah",
+  "type": "module",
+  "description": "KrackedLab \u2014 project by kdmirah lab 2026. MI4, Inc. | aimirah",
+  "scripts": {
+    "build": "node -e \"console.log('Static site: nothing to build. Files are in site/.')\""
+  }
+}
